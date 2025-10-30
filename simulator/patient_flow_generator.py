@@ -2,7 +2,10 @@ from kafka import KafkaProducer
 import json, random, time
 from datetime import datetime, timedelta, UTC
 
-# Event Hub Configuration
+# -------------------------------
+# 🔧 Azure Event Hub Configuration
+# -------------------------------
+
 EVENT_HUB_FQDN = "<<PlaceHolder>>" 
 EVENT_HUB_NAME = "<<PlaceHolder>>" 
 SAS_KEY_NAME = "<<PlaceHolder>>" 
@@ -16,7 +19,9 @@ password = (
     f"SharedAccessKey={SAS_KEY}"
 )
 
-# Initialize Kafka Producer
+# ---------------------------------------
+# 🚀 Initialize Kafka Producer Connection
+# ---------------------------------------
 producer = KafkaProducer(
     bootstrap_servers=bootstrap_server,
     security_protocol="SASL_SSL",
@@ -28,20 +33,35 @@ producer = KafkaProducer(
 
 print("✅ Connected successfully! Starting real-time patient data stream...")
 
-# Departments and statuses
+# ---------------------------------------
+# 🏥 Domain Data Categories
+# ---------------------------------------
 departments = ["Emergency", "Surgery", "ICU", "Pediatrics", "Maternity", "Oncology", "Cardiology"]
 statuses = ["admitted", "discharged", "under_treatment", "awaiting_tests"]
+genders = ["Male", "Female"]
 
+# ---------------------------------------
+# 🔁 Continuous Event Stream Generator
+# ---------------------------------------
 try:
     counter = 0
     while True:
-        # Simulate event
+        # Simulate random admission and discharge times
+        admission_time = datetime.now(UTC) - timedelta(hours=random.randint(0, 72))
+        discharge_time = admission_time + timedelta(hours=random.randint(1, 72))
+
+        # Generate random event record
         event = {
             "patient_id": random.randint(1000, 9999),
+            "gender": random.choice(genders),
             "department": random.choice(departments),
             "status": random.choice(statuses),
-            "admission_time": (datetime.now(UTC) - timedelta(hours=random.randint(0, 48))).isoformat(),
-            "timestamp": datetime.now(UTC).isoformat()
+            "admission_time": admission_time.isoformat(),
+            "discharge_time": discharge_time.isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
+            "bed_id": random.randint(1, 500),
+            "hospital_id": random.randint(1, 7),
+            "age": random.randint(1, 100)
         }
 
         # Send event to Event Hub
@@ -49,7 +69,7 @@ try:
         counter += 1
         print(f"✅ Sent event #{counter}: {event}")
 
-        time.sleep(1)  # Send one event every second
+        time.sleep(1)  # ⏱️ One event per second
 
 except KeyboardInterrupt:
     print("\n🛑 Streaming stopped by user.")
